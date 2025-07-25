@@ -1,149 +1,151 @@
-# CI Workflow Documentation
+# Ansible Roles CI Workflow Guide
+
+<div align="center">
+  <img src="https://technovids.com/wp-content/uploads/2020/04/Ansible-DevOps-Automation.jpg.webp" alt="Ansible Logo" width="40%"/>
+</div>
+
+---
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [Why CI?](#why-CI)
-- [What is CI?](#what-is-CI)
-- [Advantage of CI](#Advantage-of-CI)
-- [Disadvantage of CI](#Disadvantage-of-CI)
-- [workflow](#workflow)
-- [Best Practices](#Best-Practices)
-- [Conclusion](#conclusion)
-- [Contact information](#Contact-information)
-- [References](#references)
+1. [Introduction](#introduction)  
+2. [What is the CI Workflow?](#what-is-the-ci-workflow)  
+3. [CI Workflow Diagram](#ci-workflow-diagram)  
+4. [CI Workflow Explanation](#ci-workflow-explanation)  
+5. [Best Practices](#best-practices)  
+6. [Troubleshooting](#troubleshooting)  
+7. [Conclusion](#conclusion)  
+8. [References](#references)  
 
 ---
 
 ## Introduction
 
-This document overview the workflow for integrating Ansible Roles into a Continuous Integration (CI) pipeline. The goal is to automate infrastructure provisioning, configuration, deployment, and validation using Ansible, while ensuring quality and consistency through automated testing and linting.
+This document outlines the Continuous Integration (CI) workflow used to automate testing and validation of Ansible roles in CI/CD pipelines like GitLab CI. It helps ensure that your infrastructure code is secure, clean, and production-ready.
 
 ---
 
-## Why CI?
+## What is the CI Workflow?
 
-- **Avoid Integration Hell :**
+A typical CI workflow for Ansible roles includes:
 
-CI prevents last-minute integration issues by merging code frequently.
-
-- **Faster Feedback:**
-
-Developers get immediate alerts if their changes break the build or tests.
-
-- **Early Bug Detection:**
-
-Automated tests catch bugs before they reach production.
-
-- **Better Collaboration:**
-
-Teams work more effectively with shared, regularly tested codebases.
-
-- **Faster Release Cycle:**
-
-Clean, tested code is always ready to deploy — reducing release delays.
-
-- **Improved Code Quality:**
-
-With linting, code analysis, and testing as part of CI, quality improves over time.
-
-- **Reliable Automation:**
-
-Manual steps are reduced, making builds repeatable and consistent.
-
-- **Traceability and Transparency:**
-
-CI logs and reports make it easy to trace issues and audit builds.
-
-- **Security Testing Integration:**
-
-Security checks can be integrated early in the development process.
+- Git Checkout  
+- Clean Workspace  
+- Credential Scanning  
+- Syntax Check  
+- Ansible Linting  
+- Dry Run (Check Mode)  
+- Send Notification  
 
 ---
 
-## What is CI?
+## CI Workflow Diagram
 
-CI is the practice of automating the process of building, testing, and merging code changes regularly. It typically involves:
-
-- Developers pushing code to a shared repository
-
-- Automated tools running build and test pipelines
-
-- Quick feedback on code quality and integration status 
+<p align="center">
+  <img src="https://github.com/vardaan412/Images/blob/4fca1663dc02a588cf2f33a5e9f21890d5b6e4f7/CI.png" alt="CI Workflow" />
+</p>
 
 ---
 
-## Advantage of CI
+## CI Workflow Explanation
 
-- Early bug detection through frequent testing
+### 1. Git Checkout
 
-- Faster feedback to developers
+Pull the latest code from the target branch:
 
-- Improved code quality via automated linting and tests
+```
+git checkout <branch-name>
+```
 
-- Reduced merge conflicts
+### 2. Clean Workspace
 
-- Streamlined collaboration and transparency
+Clean all untracked and temporary files to start fresh:
 
-- Shorter release cycles with confidence
+```
+git clean -fdx
+```
+
+### 3. Credential Scanning
+
+Scan the repository for hardcoded secrets using gitleaks:
+
+
+
+```
+gitleaks detect --source
+```
+### 4. Syntax Check
+
+Validate the syntax of your Ansible playbook:
+
+
+
+```
+ansible-playbook playbook.yml --syntax-check
+```
+
+### 5. Ansible Linting
+
+Lint your Ansible role or playbook to ensure it follows best practices:
+
+
+
+```
+ansible-lint
+```
+
+### 6. Dry Run (Check Mode)
+
+Simulate the playbook run without making actual changes:
+
+
+
+```
+ansible-playbook playbook.yml --check
+```
+
+### 7. Send Notification
+Notify the team after the CI process is complete:
+
+
+
+```
+echo "CI Workflow completed!" | mail -s "CI Report" dev-team@example.com
+```
 
 ---
-
-## Disadvantage of CI
-
-- Initial setup time and configuration can be high
-
-- Resource-intensive: frequent builds and tests may consume a lot of CI server capacity
-
-- Requires cultural shift in teams to commit and test frequently
-
-- Maintenance overhead for test scripts and pipeline configurations
+## Best Practices
+|  No. | Best Practice                                                                                   |
+|-------|--------------------------------------------------------------------------------------------------|
+| 1.  | Use git clean -fdx to avoid any untracked file issues before builds.                          |
+| 2.   | Perform secret scanning early to prevent sensitive data leaks.                                   |
+| 3.   | Keep ansible-lint updated to use the latest linting rules.                                     |
+| 4.   | Use ansible-playbook --syntax-check and --check to validate without executing.              |
+| 5.   | Send notifications at the end of the pipeline (both success and failure) for visibility.         |
+| 6.   | Use proper branching strategies (feature/dev/main) with protected main branches.                 |
 
 ---
+## Troubleshooting
+|  Issue                                                                 |  Resolution                                                                 |
+|-------------------------------------------------------------------------|------------------------------------------------------------------------------|
+| Git checkout step fails                                                 | Ensure the repository and branch name are correct and accessible.            |
+| git clean -fdx not working                                            | Make sure you're in the correct repo directory and have the right permissions.|
+| Credential scanning (gitleaks) shows false positives                  | Update the rules or exclude false-positive files via config.                 |
+| ansible-lint throwing unexpected errors                               | Update ansible-lint, check rules, and fix YAML formatting.                 |
+| Syntax check fails                                                      | Ensure your playbook.yml is valid YAML and all included files exist.       |
+| Dry run fails or behaves unexpectedly                                   | Check if variables are defined and inventory/configuration is correct.       |
+| Notifications not sent                                                  | Verify webhook/SMTP config, secrets, and internet access.                    |
 
-## workflow
-<img width="554" height="981" alt="image" src="https://github.com/user-attachments/assets/143e45ed-971e-45ff-82d7-a3f5656c4c18" />
-
-### Step 1: Code Commit
-- Developer pushes code to Git repository
-
-   
-### Step 2: CI Triggered 
-- CI tool (e.g., Jenkins) detects changes
-
-  
-### Step 3: Build Stage
-- Code is compiled/built
-  
-### Step 4: Test Stage
-- Unit/integration tests are executed
-
-### Step 5: Linting & Code Analysis
-- Optional static checks
-
-### Step 6: Artifact Creation
-- Packages are created if tests pass
-
-### Step 7: Notifications
-- Feedback sent via email, Slack, etc.
 ---
-
-
-
 ## Conclusion
-
-Continuous Integration helps teams work faster and better. It finds problems early, improves code quality, and makes sure the software is always ready to use. Even though it needs a little setup.
-
----
-
-## Author
-
-- **Name:** Sunny Kumar
-- **Email:** sunny.kumar.snaatak@mygurukulam.co
+Implementing CI workflows for Ansible roles ensures quality, reliability, and rapid feedback during role development. This SOP provides a comprehensive guide to setting up CI with ansible-lint, molecule, and GitLab pipelines to streamline the role testing process. By following these best practices, teams can maintain high standards across infrastructure codebases.
 
 ---
-
 ## References
+|  Resource        | Link                                                                 | Description                                      |
+|-------------------|----------------------------------------------------------------------|--------------------------------------------------|
+| Ansible Lint      | [Ansible Lint](https://ansible-lint.readthedocs.io)                 | Best practices and checks for Ansible playbooks  |
+| Molecule          | [Molecule](https://molecule.readthedocs.io)                         | Framework for testing Ansible roles              |
+| GitLab CI Docs    | [GitLab CI Docs](https://docs.gitlab.com/ee/ci/)                    | Official GitLab documentation for CI/CD setup    |
 
-- [CI Workflow](https://jelvix.com/blog/best-ci-cd-tools-comparison)
-- [Official Documentation of CI/CD](https://www.redhat.com/en/topics/devops/what-is-ci-cd)
+---
